@@ -1,16 +1,25 @@
 {
-  "name": "firefly-importer",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Import one hardcoded transaction into Firefly III",
-  "type": "module",
-  "scripts": {
-    "start": "node src/index.js"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.7"
-  }
+	"name": "firefly-importer",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Import one hardcoded transaction into Firefly III",
+	"type": "module",
+	"scripts": {
+		"biome": "biome check --write .",
+		"check": "biome check .",
+		"check:write": "biome check --write .",
+		"format": "biome format --write .",
+		"lint": "biome lint .",
+		"start": "node src/index.js"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"dependencies": {
+		"chokidar": "^4.0.3",
+		"dotenv": "^16.4.7"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.7"
+	}
 }
