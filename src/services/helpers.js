@@ -25,7 +25,7 @@ function parseDate(dateString) {
 
 // transforma strings tipo 1.009,33 num valor numérico
 function parseBRL(value) {
-    return Number(value.replace(/\./g, "").replace(",", "."));
+	return Number(value.replace(/\./g, "").replace(",", "."));
 }
 
-export { parseDate, parseBRL };
+export { parseBRL, parseDate };

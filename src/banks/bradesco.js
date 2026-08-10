@@ -1,19 +1,18 @@
-import { parse } from 'csv-parse/sync';
-import { parseDate, parseBRL } from "../services/helpers.js";
+import { parse } from "csv-parse/sync";
+import { parseBRL, parseDate } from "../services/helpers.js";
 
 // csvData: conteúdo do CSV direto, não o caminho do arquivo
 function parseBradescoCSV(csvData) {
 	console.log(`Parseando CSV do Bradesco`);
 
 	const rows = parse(csvData, {
-		delimiter: ';',
+		delimiter: ";",
 		skip_empty_lines: true,
 		trim: true,
-		relax_column_count: true
+		relax_column_count: true,
 	});
 
 	for (const row of rows) {
-
 		// FILTROS
 		// 1 - Linhas que não são lançamentos não começam com uma data DD/MM/YYYY
 		const date = parseDate(row[0]);
@@ -25,7 +24,9 @@ function parseBradescoCSV(csvData) {
 
 		// 2 - Código de transação 0 é só o saldo antes do extrato
 		if (row[2] === "0") {
-			console.log(`:: [Bradesco] : Pulando linha: Apenas saldo antes do início do extrato`);
+			console.log(
+				`:: [Bradesco] : Pulando linha: Apenas saldo antes do início do extrato`,
+			);
 			continue;
 		}
 
@@ -53,13 +54,11 @@ function parseBradescoCSV(csvData) {
 		 * NOTA: Parei o desenvolvimento dessa função por aqui. O CSV exportado pelo app do Bradesco pra iOS
 		 * não exporta o nome do remetente / destinatário no CSV. Então isso se torna meio inútil para uso no Firefly-III
 		 * Exemplo: Em vez de aparecer "COMPRA CARTAO VISA - Pão de Açúucar", aparece apenas "COMPRA CARTÃO VISA"
-		 * 
+		 *
 		 * A solução vai ser usar o OFX exportado pelo Internet Banking via navegador no Desktop.
 		 * Queria que fosse possível fazer tudo pelo celular, mas essa limitação não permite isso.
 		 */
-		
 	}
-
 }
 
 export { parseBradescoCSV };
