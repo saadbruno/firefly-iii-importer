@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"chokidar": "^4.0.3",
+		"csv-parse": "^7.0.2",
 		"dotenv": "^16.4.7"
 	},
 	"devDependencies": {
