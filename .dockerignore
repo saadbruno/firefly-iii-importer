@@ -1,0 +1,7 @@
+.git
+.env
+node_modules
+watch
+parsed
+npm-debug.log*
+README.md

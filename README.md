@@ -108,6 +108,34 @@ Por exemplo: `Wise - BRL`, `Wise - USD` e `Wise - EUR`.
 
 ## Instalação e uso
 
+### Docker Compose
+
+Depois de criar e configurar o `.env`, inicie o importador com:
+
+```sh
+docker compose up -d
+```
+
+As pastas locais `watch` e `parsed` ficam montadas no contêiner, portanto os
+extratos permanecem no host mesmo quando o contêiner for recriado. Para
+acompanhar o processamento, use:
+
+```sh
+docker compose logs -f
+```
+
+Se o Firefly III estiver rodando diretamente na mesma máquina (fora do
+Docker), configure no `.env`:
+
+```env
+FIREFLY_URL=http://host.docker.internal:8080
+```
+
+O nome `localhost` dentro do contêiner aponta para o próprio importador, não
+para a máquina host.
+
+### Execução local
+
 Instale as dependências:
 
 ```sh
