@@ -1,9 +1,8 @@
 services:
   importer:
-    image: ghcr.io/saadbruno/firefly-importer:latest
+    image: saadbruno/firefly-importer:latest
     build:
       context: .
-    container_name: firefly-importer
     restart: unless-stopped
     init: true
     env_file:

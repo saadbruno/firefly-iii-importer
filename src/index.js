@@ -1,48 +1,43 @@
 import path from "node:path";
 import chokidar from "chokidar";
 import { enqueueFile } from "./services/files.js";
+import { testConnection } from "./services/firefly.js";
 
 const watchDirectory = path.resolve("watch");
 const allowedFiletypes = ["csv", "zip", "ofx"];
 
-// // Change these values when you are ready to import a different transaction.
-// const transaction = {
-//   error_if_duplicate_hash: true,
-//   apply_rules: true,
-//   transactions: [
-//     {
-//       type: "withdrawal",
-//       date: "2026-08-10T12:00:00-03:00",
-//       amount: "12.51",
-//       description: "Hardcoded coffee transaction",
-//       source_name: "Bradesco - SP 197",
-//       destination_name: "Coffee shop"
-//     }
-//   ]
-// };
+// Inicia o monitoramento e configura os eventos dos arquivos observados.
+function startWatcher() {
+    // Lê arquivos ao inicializar.
+    const watcher = chokidar.watch(watchDirectory, {
+        awaitWriteFinish: {
+            stabilityThreshold: 2000,
+            pollInterval: 100,
+        },
+    });
 
-// submitTransaction(transaction);
+    // Fica observando o diretório por arquivos novos após inicialização.
+    watcher.on("add", (filePath) => {
+        const filetype = path.extname(filePath).slice(1).toLowerCase();
+        if (!allowedFiletypes.includes(filetype)) return;
 
-// Lê arquivos ao inicializar
-const watcher = chokidar.watch(watchDirectory, {
-    awaitWriteFinish: {
-        stabilityThreshold: 2000,
-        pollInterval: 100,
-    },
-});
+        enqueueFile(filePath);
+    });
 
-// Fica observando o diretório por arquivos novos após inicialização
-watcher.on("add", (filePath) => {
-    const filetype = path.extname(filePath).slice(1).toLowerCase();
-    if (!allowedFiletypes.includes(filetype)) return;
+    // Registra erros emitidos pelo monitor de arquivos.
+    watcher.on("error", (error) => {
+        console.error("Watcher error:", error);
+    });
 
-    enqueueFile(filePath);
-});
+    console.log(
+        `Watching ${watchDirectory} for ${allowedFiletypes.join(", ")} files...`,
+    );
+}
 
-watcher.on("error", (error) => {
-    console.error("Watcher error:", error);
-});
+const isFireflyConnected = await testConnection();
 
-console.log(
-    `Watching ${watchDirectory} for ${allowedFiletypes.join(", ")} files...`,
-);
+if (isFireflyConnected) {
+    startWatcher();
+} else {
+    console.error("Watcher não iniciado porque a conexão com o Firefly III falhou.");
+}
