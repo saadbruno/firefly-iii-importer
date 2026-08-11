@@ -123,6 +123,16 @@ async function buildAndSendTransaction(
         formatted.transactions[0].destination_id = acctId;
     }
 
+    // EDGE CASES:
+    // 1 - Resgate investimentos Bradesco
+    if (tr.MEMO === `Resgate Fundos Plus di`) {
+        delete formatted.transactions[0].source_id;
+        delete formatted.transactions[0].destination_name;
+        formatted.transactions[0].type = `transfer`;
+        formatted.transactions[0].source_name = process.env.BRADESCO_INVESTIMENTOS_FF3_ACCT_NAME;
+        formatted.transactions[0].destination_id = acctId;
+    }
+
     await submitTransaction(formatted);
     // console.log(transaction);
     // console.log(formatted);
