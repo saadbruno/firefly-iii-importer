@@ -129,7 +129,8 @@ async function buildAndSendTransaction(
         delete formatted.transactions[0].source_id;
         delete formatted.transactions[0].destination_name;
         formatted.transactions[0].type = `transfer`;
-        formatted.transactions[0].source_name = process.env.BRADESCO_INVESTIMENTOS_FF3_ACCT_NAME;
+        formatted.transactions[0].source_name =
+            process.env.BRADESCO_INVESTIMENTOS_FF3_ACCT_NAME;
         formatted.transactions[0].destination_id = acctId;
     }
 
