@@ -1,6 +1,6 @@
 import path from "node:path";
 import chokidar from "chokidar";
-import { handleFile } from "./services/files.js";
+import { enqueueFile } from "./services/files.js";
 
 const watchDirectory = path.resolve("watch");
 const allowedFiletypes = ["csv", "zip", "ofx"];
@@ -32,11 +32,11 @@ const watcher = chokidar.watch(watchDirectory, {
 });
 
 // Fica observando o diretório por arquivos novos após inicialização
-watcher.on("add", async (filePath) => {
+watcher.on("add", (filePath) => {
     const filetype = path.extname(filePath).slice(1).toLowerCase();
     if (!allowedFiletypes.includes(filetype)) return;
 
-    await handleFile(filePath);
+    enqueueFile(filePath);
 });
 
 watcher.on("error", (error) => {
