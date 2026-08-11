@@ -15,7 +15,7 @@ async function handleFile(filePath) {
 
 		case ".ofx":
 			console.log(`Arquivo OFX`);
-			handleOFX(filePath);
+			await handleOFX(filePath);
 			break;
 
 		case ".zip":
