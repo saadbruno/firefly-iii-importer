@@ -103,7 +103,7 @@ async function parseWiseCSV(csvData) {
             formatted.transactions[0].destination_name = `${process.env.WISE_FF3_ACCT_PREFIX} - ${tr[4]}`;
         }
 
-        console.log(formatted);
+        // console.log(formatted);
 
         // A busca exata evita reenviar uma transação que já foi importada anteriormente.
         if (

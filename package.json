@@ -19,6 +19,7 @@
         "chokidar": "^4.0.3",
         "csv-parse": "^7.0.2",
         "dotenv": "^16.4.7",
+        "extract-zip": "^2.0.1",
         "node-ofx-parser": "github:russkev/node-ofx"
     },
     "overrides": {

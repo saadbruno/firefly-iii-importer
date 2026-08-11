@@ -1,6 +1,7 @@
 import path from "node:path";
 import { handleCSV } from "../filetypes/csv.js";
 import { handleOFX } from "../filetypes/ofx.js";
+import { handleZIP } from "../filetypes/zip.js";
 
 const fileQueue = [];
 let isProcessingFileQueue = false;
@@ -23,6 +24,7 @@ async function handleFile(filePath) {
 
         case ".zip":
             console.log(`Arquivo ZIP`);
+            await handleZIP(filePath);
             break;
 
         default:
