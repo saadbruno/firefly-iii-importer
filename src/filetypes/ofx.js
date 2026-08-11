@@ -16,6 +16,7 @@ async function handleOFX(filePath) {
 
     // aqui a gente primeiro lê o arquivo e confere se é de fato um OFX
     const contents = await readFile(filePath, "utf8");
+    const parseStartedAt = new Date().toISOString();
     const data = ofx.parse(contents);
 
     if (!data) {
@@ -70,6 +71,7 @@ async function handleOFX(filePath) {
                 transaction,
                 acctId,
                 internalReference,
+                parseStartedAt,
             );
         }
     }
@@ -83,7 +85,12 @@ async function handleOFX(filePath) {
 }
 
 // formata a transação do OFX pro formato da API do Firefly-III, e envia pra API
-async function buildAndSendTransaction(tr, acctId, internalReference) {
+async function buildAndSendTransaction(
+    tr,
+    acctId,
+    internalReference,
+    parseStartedAt,
+) {
     const date = parseOfxDate(tr.DTPOSTED);
 
     const formatted = {
@@ -96,7 +103,10 @@ async function buildAndSendTransaction(tr, acctId, internalReference) {
                 description: tr.MEMO,
                 internal_reference: internalReference,
                 external_id: tr.FITID,
-                tags: ["saadbruno/firefly-importer"],
+                tags: [
+                    "saadbruno/firefly-importer",
+                    `auto-import_${parseStartedAt}`,
+                ],
             },
         ],
     };
