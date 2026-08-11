@@ -1,5 +1,6 @@
 import path from "node:path";
-import { handleCSV } from "./csv.js";
+import { handleCSV } from "../filetypes/csv.js";
+import { handleOFX } from "../filetypes/ofx.js";
 
 // esse arquivo é nosso "router". Ele decide o que fazer com cada tipo de arquivo.
 async function handleFile(filePath) {
@@ -10,6 +11,11 @@ async function handleFile(filePath) {
 		case ".csv":
 			console.log(`Arquivo CSV`);
 			handleCSV(filePath);
+			break;
+
+		case ".ofx":
+			console.log(`Arquivo OFX`);
+			handleOFX(filePath);
 			break;
 
 		case ".zip":

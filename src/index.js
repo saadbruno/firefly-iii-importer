@@ -3,7 +3,7 @@ import chokidar from "chokidar";
 import { handleFile } from "./services/files.js";
 
 const watchDirectory = path.resolve("watch");
-const allowedFiletypes = ["csv", "zip"];
+const allowedFiletypes = ["csv", "zip", "ofx"];
 
 // // Change these values when you are ready to import a different transaction.
 // const transaction = {

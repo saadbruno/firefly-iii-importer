@@ -18,7 +18,13 @@
 	"dependencies": {
 		"chokidar": "^4.0.3",
 		"csv-parse": "^7.0.2",
-		"dotenv": "^16.4.7"
+		"dotenv": "^16.4.7",
+		"node-ofx-parser": "github:russkev/node-ofx"
+	},
+	"overrides": {
+		"node-ofx-parser": {
+			"fast-xml-parser": "^5.10.1"
+		}
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.7"

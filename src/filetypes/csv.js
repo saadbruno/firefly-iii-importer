@@ -1,13 +1,13 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { parseBradescoCSV } from "../banks/bradesco.js";
-import { parseWiseCSV } from "../banks/wise.js";
+import { parseBradescoCSV } from "./csvBradesco.js";
+import { parseWiseCSV } from "./csvWise.js";
 
 async function handleCSV(filePath) {
 	if (path.extname(filePath).toLowerCase() !== ".csv") return;
 
-	// arqui a gente primeiro lê o arquivo
+	// aqui a gente primeiro lê o arquivo
 	const contents = await readFile(filePath, "utf8");
 	const [firstLine = ""] = contents.replace(/^\uFEFF/, "").split(/\r?\n/, 1);
 
