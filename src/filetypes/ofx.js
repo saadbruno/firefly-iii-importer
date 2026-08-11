@@ -1,4 +1,4 @@
-import { readFile, rename } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import ofx from "node-ofx-parser";
 import {
@@ -6,6 +6,7 @@ import {
     submitTransaction,
     transactionExistsByInternalReference,
 } from "../services/firefly.js";
+import { moveFile } from "../services/helpers.js";
 
 // essa função parseia e envia as transações baseadas num arquivo OFX.
 // O arquivo OFX pode conter transações de várias contas bancárias num arquivo só.
@@ -81,7 +82,7 @@ async function handleOFX(filePath) {
     console.log(
         `:: [handleOFX] : finalizado arquivo ${path.basename(filePath)}. Movendo para pasta parsed...`,
     );
-    await rename(filePath, parsedFilePath);
+    await moveFile(filePath, parsedFilePath);
 }
 
 // formata a transação do OFX pro formato da API do Firefly-III, e envia pra API

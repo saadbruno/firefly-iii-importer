@@ -1,6 +1,6 @@
-import { rename } from "node:fs/promises";
 import path from "node:path";
 import extract from "extract-zip";
+import { moveFile } from "../services/helpers.js";
 
 // Extrai um arquivo ZIP na pasta observada e arquiva o ZIP depois da extração bem-sucedida.
 async function handleZIP(filePath) {
@@ -19,7 +19,7 @@ async function handleZIP(filePath) {
     console.log(
         `:: [handleZIP] : finalizado arquivo ${path.basename(filePath)}. Movendo para pasta parsed...`,
     );
-    await rename(absoluteFilePath, parsedFilePath);
+    await moveFile(absoluteFilePath, parsedFilePath);
 }
 
 export { handleZIP };

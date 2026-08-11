@@ -1,6 +1,7 @@
-import { readFile, rename } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+import { moveFile } from "../services/helpers.js";
 import { parseBradescoCSV } from "./csvBradesco.js";
 import { parseWiseCSV } from "./csvWise.js";
 
@@ -30,7 +31,7 @@ async function handleCSV(filePath) {
     console.log(
         `:: [handleCSV] : finalizado arquivo ${path.basename(filePath)}. Movendo para pasta parsed...`,
     );
-    await rename(filePath, parsedFilePath);
+    await moveFile(filePath, parsedFilePath);
 }
 
 export { handleCSV };

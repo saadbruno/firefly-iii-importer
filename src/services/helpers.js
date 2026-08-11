@@ -1,3 +1,18 @@
+import { copyFile, rename, unlink } from "node:fs/promises";
+
+// Move um arquivo e usa copia seguida de remocao quando origem e destino estao em filesystems diferentes.
+async function moveFile(sourcePath, destinationPath) {
+    try {
+        await rename(sourcePath, destinationPath);
+    } catch (error) {
+        if (error.code !== "EXDEV") throw error;
+
+        // Bind mounts distintos no Docker nao permitem rename entre si.
+        await copyFile(sourcePath, destinationPath);
+        await unlink(sourcePath);
+    }
+}
+
 // Converte uma data no formato DD/MM/YYYY em Date ou retorna null quando ela é inválida.
 function parseDate(dateString) {
     if (typeof dateString !== "string") return null;
@@ -28,4 +43,4 @@ function parseBRL(value) {
     return Number(value.replace(/\./g, "").replace(",", "."));
 }
 
-export { parseBRL, parseDate };
+export { moveFile, parseBRL, parseDate };
