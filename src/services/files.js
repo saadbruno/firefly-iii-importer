@@ -10,7 +10,7 @@ async function handleFile(filePath) {
     switch (ext) {
         case ".csv":
             console.log(`Arquivo CSV`);
-            handleCSV(filePath);
+            await handleCSV(filePath);
             break;
 
         case ".ofx":
