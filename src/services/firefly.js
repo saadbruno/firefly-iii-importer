@@ -30,6 +30,31 @@ async function submitTransaction(transaction) {
 	}
 }
 
+// Confere se uma referência interna já está associada a alguma transação no Firefly III.
+async function transactionExistsByInternalReference(internalReference) {
+	const query = new URLSearchParams({
+		query: `internal_reference_is:"${internalReference}"`,
+	});
+	const response = await fetch(`${endpoint}/search/transactions?${query}`, {
+		method: "GET",
+		headers: {
+			Authorization: `Bearer ${FIREFLY_TOKEN}`,
+			Accept: "application/vnd.api+json",
+			"Content-Type": "application/json",
+		},
+	});
+
+	const body = await response.json().catch(() => null);
+
+	if (!response.ok) {
+		throw new Error(
+			`Firefly III returned ${response.status}: ${JSON.stringify(body)}`,
+		);
+	}
+
+	return body.data.length > 0;
+}
+
 // pega o ID da conta (do Firefly) através do account_number
 async function getAccountIdViaNumber(acctNumber) {
 	let body;
@@ -66,4 +91,8 @@ async function getAccountIdViaNumber(acctNumber) {
 	);
 }
 
-export { getAccountIdViaNumber, submitTransaction };
+export {
+	getAccountIdViaNumber,
+	submitTransaction,
+	transactionExistsByInternalReference,
+};
