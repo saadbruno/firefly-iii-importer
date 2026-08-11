@@ -4,28 +4,30 @@ import { handleOFX } from "../filetypes/ofx.js";
 
 // esse arquivo é nosso "router". Ele decide o que fazer com cada tipo de arquivo.
 async function handleFile(filePath) {
-	console.log(`Rodando handleFile para arquivo ${filePath}`);
-	const ext = path.extname(filePath).toLowerCase();
+    console.log(`Rodando handleFile para arquivo ${filePath}`);
+    const ext = path.extname(filePath).toLowerCase();
 
-	switch (ext) {
-		case ".csv":
-			console.log(`Arquivo CSV`);
-			handleCSV(filePath);
-			break;
+    switch (ext) {
+        case ".csv":
+            console.log(`Arquivo CSV`);
+            handleCSV(filePath);
+            break;
 
-		case ".ofx":
-			console.log(`Arquivo OFX`);
-			await handleOFX(filePath);
-			break;
+        case ".ofx":
+            console.log(`Arquivo OFX`);
+            await handleOFX(filePath);
+            break;
 
-		case ".zip":
-			console.log(`Arquivo ZIP`);
-			break;
+        case ".zip":
+            console.log(`Arquivo ZIP`);
+            break;
 
-		default:
-			console.log(`Nenhum handler definido para arquivos no formato ${ext}`);
-			break;
-	}
+        default:
+            console.log(
+                `Nenhum handler definido para arquivos no formato ${ext}`,
+            );
+            break;
+    }
 }
 
 export { handleFile };

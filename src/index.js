@@ -25,24 +25,24 @@ const allowedFiletypes = ["csv", "zip", "ofx"];
 
 // Lê arquivos ao inicializar
 const watcher = chokidar.watch(watchDirectory, {
-	awaitWriteFinish: {
-		stabilityThreshold: 2000,
-		pollInterval: 100,
-	},
+    awaitWriteFinish: {
+        stabilityThreshold: 2000,
+        pollInterval: 100,
+    },
 });
 
 // Fica observando o diretório por arquivos novos após inicialização
 watcher.on("add", async (filePath) => {
-	const filetype = path.extname(filePath).slice(1).toLowerCase();
-	if (!allowedFiletypes.includes(filetype)) return;
+    const filetype = path.extname(filePath).slice(1).toLowerCase();
+    if (!allowedFiletypes.includes(filetype)) return;
 
-	await handleFile(filePath);
+    await handleFile(filePath);
 });
 
 watcher.on("error", (error) => {
-	console.error("Watcher error:", error);
+    console.error("Watcher error:", error);
 });
 
 console.log(
-	`Watching ${watchDirectory} for ${allowedFiletypes.join(", ")} files...`,
+    `Watching ${watchDirectory} for ${allowedFiletypes.join(", ")} files...`,
 );

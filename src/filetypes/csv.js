@@ -5,22 +5,22 @@ import { parseBradescoCSV } from "./csvBradesco.js";
 import { parseWiseCSV } from "./csvWise.js";
 
 async function handleCSV(filePath) {
-	if (path.extname(filePath).toLowerCase() !== ".csv") return;
+    if (path.extname(filePath).toLowerCase() !== ".csv") return;
 
-	// aqui a gente primeiro lê o arquivo
-	const contents = await readFile(filePath, "utf8");
-	const [firstLine = ""] = contents.replace(/^\uFEFF/, "").split(/\r?\n/, 1);
+    // aqui a gente primeiro lê o arquivo
+    const contents = await readFile(filePath, "utf8");
+    const [firstLine = ""] = contents.replace(/^\uFEFF/, "").split(/\r?\n/, 1);
 
-	if (firstLine.includes("TransferWise ID")) {
-		return parseWiseCSV(contents);
-	}
+    if (firstLine.includes("TransferWise ID")) {
+        return parseWiseCSV(contents);
+    }
 
-	const bradescoHeader = /Extrato de:\s*Ag:\s*\d+\s*\|\s*Conta:\s*\d+-\d+/i;
-	if (bradescoHeader.test(firstLine)) {
-		return parseBradescoCSV(contents);
-	}
+    const bradescoHeader = /Extrato de:\s*Ag:\s*\d+\s*\|\s*Conta:\s*\d+-\d+/i;
+    if (bradescoHeader.test(firstLine)) {
+        return parseBradescoCSV(contents);
+    }
 
-	console.warn(`Formato de CSV não reconhecido: ${filePath}`);
+    console.warn(`Formato de CSV não reconhecido: ${filePath}`);
 }
 
 export { handleCSV };
