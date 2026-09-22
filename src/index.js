@@ -1,10 +1,9 @@
 import path from "node:path";
 import chokidar from "chokidar";
+import { allowedFiletypes, watchDirectory } from "./config.js";
 import { enqueueFile } from "./services/files.js";
 import { testConnection } from "./services/firefly.js";
-
-const watchDirectory = path.resolve("watch");
-const allowedFiletypes = ["csv", "zip", "ofx"];
+import { startUploadServer } from "./services/upload.js";
 
 // Inicia o monitoramento e configura os eventos dos arquivos observados.
 function startWatcher() {
@@ -38,6 +37,9 @@ const isFireflyConnected = await testConnection();
 
 if (isFireflyConnected) {
     startWatcher();
+    startUploadServer(watchDirectory);
 } else {
-    console.error("Watcher não iniciado porque a conexão com o Firefly III falhou.");
+    console.error(
+        "Watcher não iniciado porque a conexão com o Firefly III falhou.",
+    );
 }

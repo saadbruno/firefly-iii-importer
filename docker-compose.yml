@@ -7,6 +7,8 @@ services:
     init: true
     env_file:
       - .env
+    ports:
+      - "${HTTP_HOST_PORT:-3000}:${HTTP_PORT:-3000}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

@@ -7,6 +7,7 @@ O programa observa a pasta `watch`, identifica novos arquivos, converte as trans
 ## Funcionalidades
 
 - Monitoramento contínuo da pasta `watch` com Chokidar.
+- Recebimento de arquivos via `POST /upload`, com token e compatibilidade com Apple Shortcuts.
 - Processamento sequencial por meio de uma fila de arquivos.
 - Suporte a arquivos `.ofx`, `.csv` e `.zip`.
 - Extração automática de ZIPs dentro da pasta observada.
@@ -83,6 +84,11 @@ Copie `.env.example` para `.env` e ajuste os valores:
 FIREFLY_URL=http://localhost:8080
 FIREFLY_TOKEN=replace-with-your-personal-access-token
 
+# Token de upload independente do token do Firefly III. Vazio desativa o HTTP.
+UPLOAD_TOKEN=seu-token-de-upload
+HTTP_PORT=3000
+HTTP_HOST_PORT=3000
+
 # Prefixo usado nos nomes das contas Wise no Firefly III.
 WISE_FF3_ACCT_PREFIX="Wise"
 
@@ -152,6 +158,79 @@ Com o processo em execução, coloque os extratos na pasta `watch`. Arquivos que
 
 Os arquivos concluídos são movidos para `parsed`. Arquivos CSV cujo formato não seja reconhecido permanecem em `watch`.
 
+### Envio por HTTP e Apple Shortcuts (Atalhos)
+
+Configure `UPLOAD_TOKEN` no `.env` com um segredo próprio para os uploads. Você
+pode gerar um com `openssl rand -hex 32`. O servidor Express inicia junto com o
+monitor depois que a conexão com o Firefly III é validada. Sem `UPLOAD_TOKEN`,
+apenas o monitor da pasta funciona.
+
+`HTTP_PORT` define a porta interna do Express e a porta na execução local.
+`HTTP_HOST_PORT` define a porta publicada pelo Docker. Por exemplo,
+`HTTP_PORT=3000` e `HTTP_HOST_PORT=8081` disponibilizam
+`http://IP-DO-HOST:8081/upload`. Recrie o serviço depois de alterar o `.env`:
+`docker compose up -d`. Para construir localmente esta versão, use
+`docker compose up -d --build`.
+
+O endpoint aceita **um arquivo CSV, OFX ou ZIP por requisição**, de até **25 MiB**,
+com o header `Authorization: Bearer SEU_UPLOAD_TOKEN`. Use HTTPS quando acessar
+pela internet, para proteger o token e o extrato durante o envio.
+
+No aplicativo **Atalhos** do iOS:
+
+1. Use **Selecionar Arquivo** ou receba o arquivo pela folha de compartilhamento.
+2. Adicione **Obter Conteúdo de URL** com a URL `http://IP-DO-HOST:8081/upload`
+   (substitua pela sua URL e porta externa).
+3. Selecione o método **POST** e adicione o header **Authorization**, com valor
+   `Bearer SEU_UPLOAD_TOKEN`.
+4. Em **Corpo da Solicitação**, escolha **Formulário**. Adicione um campo do tipo
+   **Arquivo**, com a chave **file**, e selecione o arquivo da etapa anterior.
+   Deixe o Atalhos definir o `Content-Type` e o boundary do formulário.
+5. Opcionalmente, use **Mostrar Resultado** para exibir o JSON retornado.
+
+Também é possível escolher **Arquivo** como corpo da solicitação. Nesse caso,
+envie o arquivo diretamente, acrescente o header `X-File-Name` com o nome e a
+extensão (por exemplo, `extrato.ofx`) e use `Content-Type: application/octet-stream`.
+O suporte do Atalhos a corpos Formulário e Arquivo está descrito na
+[documentação da Apple](https://support.apple.com/guide/shortcuts/apd58d46713f/ios).
+Para vários arquivos, use **Repetir com Cada Item** e faça um POST por arquivo.
+
+Exemplo com formulário:
+
+```sh
+curl --fail-with-body http://localhost:3000/upload \
+  -H "Authorization: Bearer $UPLOAD_TOKEN" \
+  -F 'file=@/caminho/extrato.ofx'
+```
+
+Exemplo com arquivo direto:
+
+```sh
+curl --fail-with-body http://localhost:3000/upload \
+  -H "Authorization: Bearer $UPLOAD_TOKEN" \
+  -H 'Content-Type: application/octet-stream' \
+  -H 'X-File-Name: extratos.zip' \
+  --data-binary @/caminho/extratos.zip
+```
+
+Nos exemplos, `$UPLOAD_TOKEN` deve estar exportado no shell; o `curl` não lê o
+`.env` automaticamente.
+
+Uma resposta **202** confirma que o arquivo foi salvo em `watch`, com nome único
+para evitar sobrescritas. Ela **não confirma a importação no Firefly III**: o
+monitor processa o arquivo pela mesma fila e pelos mesmos parsers dos arquivos
+copiados manualmente, inclusive na extração de ZIPs e no arquivamento em `parsed`.
+O arquivo só fica disponível para processamento depois de gravado por completo.
+Acompanhe o resultado pelos logs do importador.
+
+```json
+{"status":"accepted","filename":"uuid-extrato.ofx"}
+```
+
+Erros retornam JSON com `error`: **401** para token ausente ou inválido, **400**
+para arquivo vazio ou upload inválido, **413** para tamanho acima do limite e
+**415** para extensão não suportada ou codificação de corpo não suportada.
+
 ## Prevenção de duplicidade
 
 Antes de importar uma transação OFX ou Wise, o programa pesquisa no endpoint de busca do Firefly III por uma correspondência exata de `internal_reference`. Se ela já existir, a transação é ignorada.
@@ -170,7 +249,8 @@ Assim, as regras configuradas na interface do Firefly III são executadas durant
 ## Scripts disponíveis
 
 ```sh
-npm start        # inicia o monitor da pasta watch
+npm start        # inicia o monitor e o HTTP quando UPLOAD_TOKEN está configurado
+npm test         # verifica o recebimento de uploads por HTTP
 npm run check    # verifica formatação e lint com Biome
 npm run format   # formata os arquivos
 npm run lint     # executa apenas o lint
@@ -182,7 +262,8 @@ npm run check:write
 
 ```text
 src/
-├── index.js                  # observa a pasta watch
+├── index.js                  # inicia o monitor e o servidor HTTP
+├── config.js                 # pasta observada e extensões aceitas
 ├── filetypes/
 │   ├── csv.js                # identifica e encaminha os CSVs
 │   ├── csvBradesco.js        # interpreta CSVs do Bradesco
@@ -192,7 +273,8 @@ src/
 └── services/
     ├── files.js              # roteamento e fila de arquivos
     ├── firefly.js            # comunicação com a API do Firefly III
-    └── helpers.js            # conversão e validação de valores e datas
+    ├── helpers.js            # conversão e validação de valores e datas
+    └── upload.js             # POST autenticado para salvar arquivos em watch
 
 watch/                        # entrada de arquivos
 parsed/                       # arquivos já processados

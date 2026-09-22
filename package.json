@@ -10,7 +10,8 @@
         "check:write": "biome check --write .",
         "format": "biome format --write .",
         "lint": "biome lint .",
-        "start": "node src/index.js"
+        "start": "node src/index.js",
+        "test": "node --test"
     },
     "engines": {
         "node": ">=18"
@@ -19,7 +20,9 @@
         "chokidar": "^4.0.3",
         "csv-parse": "^7.0.2",
         "dotenv": "^16.4.7",
+        "express": "^5.2.1",
         "extract-zip": "^2.0.1",
+        "multer": "^2.4.0",
         "node-ofx-parser": "github:russkev/node-ofx"
     },
     "overrides": {
