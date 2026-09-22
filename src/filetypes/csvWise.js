@@ -31,7 +31,7 @@ async function parseWiseCSV(csvData) {
             transactions: [
                 {
                     date: tr[2],
-                    amount: tr[3].replaceAll("-", ""),
+                    amount: tr[3].replaceAll("-", ""), // remove símbolo de negativo pra débitos. Firefly precisa de valores absolutos tanto pra crédito quanto pra débito
                     description: tr[5],
                     internal_reference: tr[0],
                     external_id: tr[0],
@@ -57,9 +57,8 @@ async function parseWiseCSV(csvData) {
                 formatted.transactions[0].notes = `Câmbio: ${tr[10]} | Taxa: ${tr[19]}`;
 
                 break;
-            case `CARD`:
-                formatted.transactions[0].internal_reference = `${tr[0]}-${tr[4]}-${tr[21]}`;
             default:
+                formatted.transactions[0].internal_reference = `${tr[0]}-${tr[4]}-${tr[21]}`; // adiciona moeda e CREDIT / DEBIT à referência interna pra prevenir duplicidade
                 if (tr[21] === `DEBIT`) {
                     formatted.transactions[0].type = `withdrawal`;
                     formatted.transactions[0].source_name = `${process.env.WISE_FF3_ACCT_PREFIX} - ${tr[4]}`;
