@@ -172,6 +172,12 @@ apenas o monitor da pasta funciona.
 `docker compose up -d`. Para construir localmente esta versão, use
 `docker compose up -d --build`.
 
+Para conferir pelo navegador se o servidor HTTP está respondendo, abra
+`http://IP-DO-HOST:8081/health` usando sua porta externa. O endpoint `GET /health`
+não exige autenticação e retorna HTTP **200** com `{"status":"ok"}`.
+Essa resposta confirma a disponibilidade do HTTP; não verifica a conexão atual
+com o Firefly III nem o resultado das importações.
+
 O endpoint aceita **um arquivo CSV, OFX ou ZIP por requisição**, de até **25 MiB**,
 com o header `Authorization: Bearer SEU_UPLOAD_TOKEN`. Use HTTPS quando acessar
 pela internet, para proteger o token e o extrato durante o envio.

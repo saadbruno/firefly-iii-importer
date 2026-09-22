@@ -8,7 +8,11 @@ import { allowedFiletypes } from "../config.js";
 const maxFileSize = 25 * 1024 * 1024;
 
 // Cria o endpoint autenticado que recebe um arquivo e o entrega ao monitor.
-function createUploadApp({ watchDirectory, token, fileSizeLimit = maxFileSize }) {
+function createUploadApp({
+    watchDirectory,
+    token,
+    fileSizeLimit = maxFileSize,
+}) {
     if (!token?.trim()) {
         throw new Error("UPLOAD_TOKEN não pode estar vazio.");
     }
@@ -19,7 +23,11 @@ function createUploadApp({ watchDirectory, token, fileSizeLimit = maxFileSize })
         storage: multer.memoryStorage(),
         limits: { fileSize: fileSizeLimit, files: 1, fields: 0, parts: 2 },
     }).single("file");
-    const raw = express.raw({ type: "*/*", limit: fileSizeLimit, inflate: false });
+    const raw = express.raw({
+        type: "*/*",
+        limit: fileSizeLimit,
+        inflate: false,
+    });
     app.disable("x-powered-by");
 
     // Autentica antes de ler o corpo para não armazenar uploads não autorizados.
@@ -30,7 +38,9 @@ function createUploadApp({ watchDirectory, token, fileSizeLimit = maxFileSize })
             !timingSafeEqual(supplied, authorization)
         ) {
             res.set("WWW-Authenticate", "Bearer");
-            return res.status(401).json({ error: "Token ausente ou inválido." });
+            return res
+                .status(401)
+                .json({ error: "Token ausente ou inválido." });
         }
         next();
     }
@@ -56,13 +66,17 @@ function createUploadApp({ watchDirectory, token, fileSizeLimit = maxFileSize })
         const basename = path.basename(originalName.replaceAll("\\", "/"));
         const extension = path.extname(basename).toLowerCase();
         if (!allowedFiletypes.includes(extension.slice(1))) {
-            return res.status(415).json({ error: "Use um arquivo CSV, OFX ou ZIP." });
+            return res
+                .status(415)
+                .json({ error: "Use um arquivo CSV, OFX ou ZIP." });
         }
 
         // Remove caminhos e caracteres especiais; o UUID evita sobrescrever extratos.
-        const stem = path.basename(basename, path.extname(basename))
-            .replace(/[^a-zA-Z0-9_-]/g, "_")
-            .slice(0, 100) || "upload";
+        const stem =
+            path
+                .basename(basename, path.extname(basename))
+                .replace(/[^a-zA-Z0-9_-]/g, "_")
+                .slice(0, 100) || "upload";
         const id = randomUUID();
         const filename = `${id}-${stem}${extension}`;
         const temporaryPath = path.join(watchDirectory, `${id}.upload`);
@@ -70,7 +84,10 @@ function createUploadApp({ watchDirectory, token, fileSizeLimit = maxFileSize })
         try {
             // A extensão temporária é ignorada pelo watcher; rename publica o arquivo
             // atomicamente no mesmo filesystem, inclusive no bind mount do Docker.
-            await writeFile(temporaryPath, contents, { flag: "wx", mode: 0o600 });
+            await writeFile(temporaryPath, contents, {
+                flag: "wx",
+                mode: 0o600,
+            });
             await rename(temporaryPath, path.join(watchDirectory, filename));
         } finally {
             await rm(temporaryPath, { force: true });
@@ -81,22 +98,44 @@ function createUploadApp({ watchDirectory, token, fileSizeLimit = maxFileSize })
 
     // Converte falhas de upload em JSON sem expor detalhes internos ou credenciais.
     function handleUploadError(error, _req, res, _next) {
-        if (error.code === "LIMIT_FILE_SIZE" || error.type === "entity.too.large") {
-            return res.status(413).json({ error: "Arquivo excede o limite de upload." });
+        if (
+            error.code === "LIMIT_FILE_SIZE" ||
+            error.type === "entity.too.large"
+        ) {
+            return res
+                .status(413)
+                .json({ error: "Arquivo excede o limite de upload." });
         }
         if (error instanceof multer.MulterError) {
-            return res.status(400).json({ error: 'Envie apenas um arquivo no campo "file".' });
+            return res
+                .status(400)
+                .json({ error: 'Envie apenas um arquivo no campo "file".' });
         }
         if (error.status >= 400 && error.status < 500) {
-            return res.status(error.status).json({ error: "Corpo do upload inválido." });
+            return res
+                .status(error.status)
+                .json({ error: "Corpo do upload inválido." });
         }
         // O parser multipart não atribui status a erros de estrutura do formulário.
-        if (error.message === "Unexpected end of form" || error.message === "Multipart: Boundary not found") {
-            return res.status(400).json({ error: "Formulário multipart inválido." });
+        if (
+            error.message === "Unexpected end of form" ||
+            error.message === "Multipart: Boundary not found"
+        ) {
+            return res
+                .status(400)
+                .json({ error: "Formulário multipart inválido." });
         }
         console.error("Falha ao receber upload:", error);
-        return res.status(500).json({ error: "Não foi possível salvar o arquivo." });
+        return res
+            .status(500)
+            .json({ error: "Não foi possível salvar o arquivo." });
     }
+
+    // Confirma pelo navegador que o servidor HTTP está respondendo, sem exigir token.
+    app.get("/health", (_req, res) => {
+        res.set("Cache-Control", "no-store");
+        res.json({ status: "ok" });
+    });
 
     app.post("/upload", authenticate, parseUpload, receiveUpload);
     app.use(handleUploadError);
@@ -107,7 +146,9 @@ function createUploadApp({ watchDirectory, token, fileSizeLimit = maxFileSize })
 function startUploadServer(watchDirectory) {
     const token = process.env.UPLOAD_TOKEN;
     if (!token?.trim()) {
-        console.log("Uploads HTTP desativados: configure UPLOAD_TOKEN para habilitar.");
+        console.log(
+            "Uploads HTTP desativados: configure UPLOAD_TOKEN para habilitar.",
+        );
         return;
     }
 
